@@ -300,8 +300,15 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;background:var(--prim
 .detail-hero{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);margin-bottom:16px}
 .detail-photo{aspect-ratio:16/10;background:linear-gradient(160deg,var(--primary-soft),#fff);position:relative;overflow:hidden;display:grid;place-items:center}
 @media(min-width:900px){.detail-photo{aspect-ratio:16/7}}
-.detail-photo img{width:100%;height:100%;object-fit:cover}
+.detail-photo img{width:100%;height:100%;object-fit:contain;padding:10px;cursor:zoom-in}
 .detail-photo .no-photo{color:var(--primary);opacity:.35;font-size:120px}
+
+/* lightbox — foto em tela cheia */
+.lightbox{position:fixed;inset:0;background:rgba(10,5,6,.92);backdrop-filter:blur(4px);z-index:120;display:grid;place-items:center;cursor:zoom-out;animation:lbIn .2s var(--ease)}
+@keyframes lbIn{from{opacity:0}to{opacity:1}}
+.lightbox img{max-width:94vw;max-height:92vh;object-fit:contain;border-radius:10px;box-shadow:0 30px 80px -20px rgba(0,0,0,.8)}
+.lightbox .lb-close{position:fixed;top:calc(14px + var(--safe-top));right:14px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;display:grid;place-items:center;cursor:pointer;font-size:20px}
+.lightbox .lb-close:hover{background:rgba(255,255,255,.28)}
 .photo-swap{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);border:0;padding:8px 12px;border-radius:999px;font-weight:700;font-size:13px;color:var(--primary);cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 6px 14px -4px rgba(0,0,0,.15)}
 .photo-swap:hover{background:#fff;color:var(--primary-hover)}
 .detail-summary{padding:18px 20px}
@@ -1053,7 +1060,7 @@ function detailPage(){
 
     <div class="detail-hero reveal">
       <div class="detail-photo">
-        ${v.foto_url ? `<img src="${v.foto_url}" alt="${escAttr(v.nome)}"/>` : `<img src="${svgLabelPlaceholder(v.nome,v.tipo)}" alt="${escAttr(v.nome)}"/>`}
+        ${v.foto_url ? `<img src="${v.foto_url}" alt="${escAttr(v.nome)}" data-act="ver-foto" title="Clique para ampliar"/>` : `<img src="${svgLabelPlaceholder(v.nome,v.tipo)}" alt="${escAttr(v.nome)}"/>`}
         <button class="photo-swap" data-act="upload-foto">
           <svg class="i" style="font-size:15px"><use href="#i-camera"/></svg> Trocar foto
         </button>
@@ -1602,6 +1609,8 @@ function attachHandlers(){
   if(delBtn) delBtn.addEventListener('click', () => { state.menuOpen=false; state.modal = {type:'confirmar-exclusao', data:{id:state.route.id}}; renderModal(); });
   const uploadBtn = document.querySelector('[data-act="upload-foto"]');
   if(uploadBtn) uploadBtn.addEventListener('click', () => { state.modal = {type:'upload-foto', data:{id:state.route.id, preview:null}}; renderModal(); });
+  const fotoZoom = document.querySelector('[data-act="ver-foto"]');
+  if(fotoZoom) fotoZoom.addEventListener('click', () => openLightbox(fotoZoom.src));
 
   // Edit / Create
   const cancelEdit = document.querySelectorAll('[data-act="cancel-edit"]');
@@ -1933,6 +1942,17 @@ function applyVivinoData(data, id){
     }
     closeModal(); render();
   });
+}
+
+function openLightbox(src){
+  const lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.innerHTML = `<button class="lb-close" aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button><img src="${src}" alt="Foto ampliada"/>`;
+  const close = () => { lb.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = e => { if(e.key === 'Escape') close(); };
+  lb.addEventListener('click', close); // clique em qualquer lugar fecha
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(lb);
 }
 
 function closeModal(){
