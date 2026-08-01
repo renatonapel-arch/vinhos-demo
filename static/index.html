@@ -91,6 +91,7 @@ svg.i.fill{fill:currentColor;stroke:none}
 .list-head .col-prod{flex:1 1 0;min-width:0}
 .list-head .col-price{min-width:88px;text-align:right}
 .list-head .col-stock{min-width:96px;text-align:center}
+.list-head .col-added{min-width:100px;text-align:right}
 .list-row{display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s var(--ease);min-height:52px}
 .list-row:last-child{border-bottom:0}
 .list-row:hover{background:var(--primary-soft)}
@@ -106,12 +107,16 @@ svg.i.fill{fill:currentColor;stroke:none}
 .lr-classif{flex:0 0 auto;min-width:110px}
 .lr-price{flex:0 0 auto;font-family:var(--font-d);font-weight:800;color:var(--primary);font-size:14px;font-variant-numeric:tabular-nums;min-width:88px;text-align:right}
 .lr-stock{flex:0 0 auto;display:inline-flex;align-items:center;gap:2px;background:#fff;border:1px solid var(--border);border-radius:999px;padding:2px;min-width:96px;justify-content:center}
+.lr-added{flex:0 0 auto;min-width:100px;text-align:right;color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums;font-weight:600}
 .lr-stock .stock-btn{width:26px;height:26px;font-size:14px}
 .lr-stock .stock-count{min-width:22px;font-size:13px}
 .list-row.reveal{opacity:0;transform:translateY(10px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
 .list-row.reveal.in{opacity:1;transform:none}
 
 /* colapsar colunas em telas médias/pequenas mantendo 1 linha só */
+@media(max-width:1200px){
+  .list-head .col-added,.lr-added{display:none}
+}
 @media(max-width:1024px){
   .list-head .col-prod,.lr-prod{display:none}
   .list-head .col-classif,.lr-classif{display:none}
@@ -769,6 +774,7 @@ function listPage(){
         <div class="col-classif" style="min-width:110px">${sortHeaderHTML('classificacao','Classificação')}</div>
         <div class="col-price">${sortHeaderHTML('preco_brl','Preço')}</div>
         <div class="col-stock">${sortHeaderHTML('estoque','Estoque')}</div>
+        <div class="col-added">${sortHeaderHTML('created_at','Adicionado')}</div>
       </div>
       ${filtrados.map((v,i)=>vinhoRow(v,i)).join('')}
     </div>`;
@@ -848,7 +854,15 @@ function vinhoRow(v,i){
         <svg class="i" style="font-size:14px"><use href="#i-plus"/></svg>
       </button>
     </div>
+    <div class="lr-added">${fmtDateShort(v.created_at)}</div>
   </div>`;
+}
+
+function fmtDateShort(iso){
+  if(!iso) return '—';
+  const s = String(iso).slice(0,10);
+  const [y,m,d] = s.split('-');
+  return d && m && y ? `${d}/${m}/${y.slice(2)}` : '—';
 }
 
 function vinhoCard(v,i){
